@@ -190,8 +190,7 @@ class AlphabetDetectionNode(Node):
                 M = cv2.getPerspectiveTransform(rect, dst)
                 warped = cv2.warpPerspective(frame2, M, (maxWidth, maxHeight))
 
-                # 結果を保存・表示
-                cv2.imwrite("warped_a5.jpg", warped)
+                # 結果を表示
                 cv2.imshow("Warped A5", warped)
                 cv2.moveWindow("Waroed A5", 0, 0)   
 
