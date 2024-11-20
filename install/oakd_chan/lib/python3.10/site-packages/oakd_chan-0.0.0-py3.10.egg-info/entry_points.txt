@@ -1,0 +1,4 @@
+[console_scripts]
+alphabet_detection_node = oakd_chan.alphabet_detection_node:main
+alphabet_detection_real_node = oakd_chan.alphabet_detection_real_node:main
+oakd_chan_node = oakd_chan.oakd_chan_node:main
