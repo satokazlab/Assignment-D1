@@ -8,6 +8,7 @@ import pytesseract
 import numpy as np
 import math
 from collections import Counter
+import time
 
 class AlphabetDetectionNode(Node):
     def __init__(self):
@@ -20,10 +21,16 @@ class AlphabetDetectionNode(Node):
         # 文字認識結果を保存するリスト
         self.recognized_texts = []
         # 特定の文字をカウントするためのカウンタ
-        self.char_count = {'a': 0, 'A': 0, 'b': 0, 'B': 0, 'c': 0, 'C': 0,}  
+        self.char_count = {'a': 0, 'A': 0, 'b': 0, 'B': 0, 'c': 0, 'C': 0}  
+
+        self.start_time = None  # 文字の認識開始時刻を保存
+        self.timer_started = False  # タイマーが開始されたかどうかを示すフラグ
 
         # 30FPSでタイマーを設定し、コールバックを実行
         self.timer = self.create_timer(0.03, self.timer_callback)
+
+        # 5秒後に呼び出すタイマー
+        self.later_timer = None
 
     def initialize_pipeline(self):
         """Initialize the DepthAI pipeline."""
@@ -184,7 +191,7 @@ class AlphabetDetectionNode(Node):
                 aspect_ratio = width / height
 
                 # 横長A5を基準とした新しい座標を計算
-                maxWidth = int(1000)  # 横方向のサイズを任意に設定
+                maxWidth = int(500)  # 横方向のサイズを任意に設定
                 maxHeight = int(maxWidth / aspect_ratio)  # 縦方向は縦横比に基づいて計算
 
                 dst = np.array([
@@ -248,16 +255,43 @@ class AlphabetDetectionNode(Node):
             text = pytesseract.image_to_string(trimmed_image, lang='eng', config = r'--psm 10').strip()
             if text:
                 self.get_logger().info(f'Recognized text: {text}')
-                # 認識した文字をリストに追加
-                self.recognized_texts.append(text)
-                # 特定の文字（例：'A'）のカウントを増やす
-                for char in self.char_count:
-                    self.char_count[char] += text.count(char)
-                
-                # カウント結果をログに出力
-                for char, count in self.char_count.items():
-                    self.get_logger().info(f'Character {char} count: {count}')
 
+               # 認識した文字が特定の文字リスト（self.char_count）に含まれている場合のみ処理
+                for char in self.char_count:
+                    if char in text:
+                        # 認識された文字列をリストに追加
+                        self.recognized_texts.append(text)
+
+                        # 特定の文字をカウント
+                        for char in text:
+                            if char in self.char_count:
+                                self.char_count[char] += 1
+
+                                # 初めて文字を認識したときにタイマーを開始
+                                if not self.timer_started:
+                                    self.start_later_timer()
+
+
+    def start_later_timer(self):
+        """5秒後に特定の関数を呼び出すタイマーを開始"""
+        if not self.timer_started:
+            self.later_timer = self.create_timer(5.0, self.finalize_count)
+            self.timer_started = True  # タイマーが開始されたことを記録
+            self.get_logger().info("5秒タイマーを開始しました。")
+
+    def finalize_count(self):
+        """カウント結果を処理し、最も多く認識した文字を選ぶ"""
+        # 5秒後に実行される処理
+        if self.char_count:
+            most_recognized_char = max(self.char_count, key=self.char_count.get)
+            self.get_logger().info(f"最も多く認識された文字: {most_recognized_char}")
+        else:
+            self.get_logger().info("認識された文字がありません。")
+
+        # タイマーを停止
+        if self.later_timer is not None:
+            self.later_timer.cancel()
+            self.later_timer = None
 
 # pt0-> pt1およびpt0-> pt2からの
 # ベクトル間の角度の余弦(コサイン)を算出
