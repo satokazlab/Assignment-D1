@@ -7,6 +7,7 @@ import cv2
 import pytesseract
 import numpy as np
 import math
+from collections import Counter
 
 class AlphabetDetectionNode(Node):
     def __init__(self):
@@ -15,6 +16,12 @@ class AlphabetDetectionNode(Node):
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
         self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
+        
+        # 文字認識結果を保存するリスト
+        self.recognized_texts = []
+        # 特定の文字をカウントするためのカウンタ
+        self.char_count = {'a': 0, 'A': 0, 'b': 0, 'B': 0, 'c': 0, 'C': 0,}  
+
         # 30FPSでタイマーを設定し、コールバックを実行
         self.timer = self.create_timer(0.03, self.timer_callback)
 
@@ -36,13 +43,14 @@ class AlphabetDetectionNode(Node):
 
         return dai.Device(pipeline)
 
-    def timer_callback(self):
+    def timer_callback(self):  #コールバック関数
 
         in_rgb = self.device.getOutputQueue(name="rgb", maxSize=4, blocking=False).get()
+
         # OpenCV形式のフレームに変換
         frame = in_rgb.getCvFrame() #表示用
-        frame1 = frame.copy() #認識用
-        frame2 = frame.copy() #歪み補正チェック用
+        frame1 = frame.copy()       #認識用
+        frame2 = frame.copy()       #歪み補正チェック用
 
         #箱検出関数 〜 文字検出まで
         self.box_detection(frame, frame1, frame2)
@@ -190,8 +198,7 @@ class AlphabetDetectionNode(Node):
                 M = cv2.getPerspectiveTransform(rect, dst)
                 warped = cv2.warpPerspective(frame2, M, (maxWidth, maxHeight))
 
-                # 結果を保存・表示
-                cv2.imwrite("warped_a5.jpg", warped)
+                # 結果を表示
                 cv2.imshow("Warped A5", warped)
                 cv2.moveWindow("Waroed A5", 0, 0)   
 
@@ -241,6 +248,15 @@ class AlphabetDetectionNode(Node):
             text = pytesseract.image_to_string(trimmed_image, lang='eng', config = r'--psm 10').strip()
             if text:
                 self.get_logger().info(f'Recognized text: {text}')
+                # 認識した文字をリストに追加
+                self.recognized_texts.append(text)
+                # 特定の文字（例：'A'）のカウントを増やす
+                for char in self.char_count:
+                    self.char_count[char] += text.count(char)
+                
+                # カウント結果をログに出力
+                for char, count in self.char_count.items():
+                    self.get_logger().info(f'Character {char} count: {count}')
 
 
 # pt0-> pt1およびpt0-> pt2からの
