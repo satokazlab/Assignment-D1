@@ -22,7 +22,9 @@ setup(
         'console_scripts': [
             'oakd_chan_node = oakd_chan.oakd_chan_node:main',
             'alphabet_detection_node = oakd_chan.alphabet_detection_node:main',
-            'alphabet_detection_real_node = oakd_chan.alphabet_detection_real_node:main'
+            'alphabet_detection_real_node = oakd_chan.alphabet_detection_real_node:main',
+            'search_for_box_node = oakd_chan.search_for_box_node:main'
+            
         ],
     },
 )

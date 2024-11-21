@@ -84,8 +84,8 @@ class AlphabetDetectionNode(Node):
         # upper_green = np.array([80, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        lower_green = np.array([90, 60, 60])   # HSVで緑色の下限
-        upper_green = np.array([150, 255, 255])  # HSVで緑色の上限
+        lower_green = np.array([90, 60, 60])   # HSVで青色の下限
+        upper_green = np.array([150, 255, 255])  # HSVで青色の上限
         
         # 緑色部分のマスクを作成
         mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
