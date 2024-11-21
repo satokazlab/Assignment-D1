@@ -280,11 +280,20 @@ class AlphabetDetectionNode(Node):
             self.get_logger().info("5秒タイマーを開始しました。")
 
     def finalize_count(self):
-        """カウント結果を処理し、最も多く認識した文字を選ぶ"""
-        # 5秒後に実行される処理
-        if self.char_count:
-            most_recognized_char = max(self.char_count, key=self.char_count.get)
-            self.get_logger().info(f"最も多く認識された文字: {most_recognized_char}")
+        """カウント結果を処理し、大文字小文字を合計して最も多く認識した文字を選ぶ"""
+        # 大文字・小文字の合計を計算
+        total_counts = {
+            'A': self.char_count['a'] + self.char_count['A'],
+            'B': self.char_count['b'] + self.char_count['B'],
+            'C': self.char_count['c'] + self.char_count['C']
+        }
+
+        # 最も多く認識された文字を選択
+        if total_counts:
+            most_recognized_char = max(total_counts, key=total_counts.get)
+            self.get_logger().info(
+                f"最も多く認識された文字: {most_recognized_char} (合計: {total_counts[most_recognized_char]})"
+            )
         else:
             self.get_logger().info("認識された文字がありません。")
 
