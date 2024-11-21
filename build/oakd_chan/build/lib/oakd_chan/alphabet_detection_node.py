@@ -116,7 +116,7 @@ class AlphabetDetectionNode(Node):
             hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
             
             # 白色の範囲をHSVで定義　日陰だとキツイかも
-            lower_white = np.array([0, 0, 150])
+            lower_white = np.array([0, 0, 120])
             upper_white = np.array([180, 60, 255])#彩度を40から60に上げるとつくばチャレンジの文字の影響が小さくなった。
 
             ###ここからコピペ
