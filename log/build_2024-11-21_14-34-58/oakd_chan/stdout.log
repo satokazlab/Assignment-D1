@@ -1,0 +1,25 @@
+running egg_info
+writing build/oakd_chan/oakd_chan.egg-info/PKG-INFO
+writing dependency_links to build/oakd_chan/oakd_chan.egg-info/dependency_links.txt
+writing entry points to build/oakd_chan/oakd_chan.egg-info/entry_points.txt
+writing requirements to build/oakd_chan/oakd_chan.egg-info/requires.txt
+writing top-level names to build/oakd_chan/oakd_chan.egg-info/top_level.txt
+reading manifest file 'build/oakd_chan/oakd_chan.egg-info/SOURCES.txt'
+writing manifest file 'build/oakd_chan/oakd_chan.egg-info/SOURCES.txt'
+running build
+running build_py
+copying oakd_chan/alphabet_detection_node.py -> /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build/lib/oakd_chan
+running install
+running install_lib
+copying /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build/lib/oakd_chan/alphabet_detection_node.py -> /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan
+byte-compiling /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan/alphabet_detection_node.py to alphabet_detection_node.cpython-310.pyc
+running install_data
+running install_egg_info
+removing '/home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan-0.0.0-py3.10.egg-info' (and everything under it)
+Copying build/oakd_chan/oakd_chan.egg-info to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan-0.0.0-py3.10.egg-info
+running install_scripts
+Installing alphabet_detection_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+Installing alphabet_detection_real_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+Installing oakd_chan_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+Installing search_for_box_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+writing list of installed files to '/home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/install.log'
