@@ -32,7 +32,7 @@ class SearchForBoxNode(Node):
         # 左カメラの設定
         left_camera = pipeline.create(dai.node.MonoCamera)
         left_camera.setBoardSocket(dai.CameraBoardSocket.LEFT)
-        left_camera.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P) #  720
+        left_camera.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P) # 720
 
         # 右カメラの設定
         right_camera = pipeline.create(dai.node.MonoCamera)
@@ -41,7 +41,7 @@ class SearchForBoxNode(Node):
 
         # Depthカメラの設定
         cam_depth = pipeline.create(dai.node.StereoDepth)
-        cam_depth.setOutputSize(320, 240)  # 出力解像度を小さくする
+        cam_depth.setOutputSize(320, 240)  # depthの出力解像度を小さくする
         # cam_depth.setInput(left_camera, right_camera)  # 左右のカメラを入力に指定
         cam_depth.initialConfig.setConfidenceThreshold(200)
         cam_depth.setDepthAlign(dai.CameraBoardSocket.RGB)
@@ -69,7 +69,6 @@ class SearchForBoxNode(Node):
         in_rgb = self.device.getOutputQueue(name="rgb", maxSize=4, blocking=False).get()
         q_depth = self.device.getOutputQueue(name="depth", maxSize=8, blocking=False).get()
         
-
         # OpenCV形式のフレームに変換
         frame = in_rgb.getCvFrame() #表示用
         frame1 = q_depth.getFrame()
@@ -104,8 +103,8 @@ class SearchForBoxNode(Node):
         # upper_green = np.array([80, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        lower_green = np.array([100, 60, 60])   # HSVで青色の下限  広すぎる。
-        upper_green = np.array([140, 255, 255])  # HSVで青色の上限
+        lower_green = np.array([95, 100, 60])   # HSVで青色の下限  広すぎる。
+        upper_green = np.array([115, 255, 255])  # HSVで青色の上限
         
         # 緑色部分のマスクを作成
         mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
@@ -116,11 +115,11 @@ class SearchForBoxNode(Node):
         green_box = None
         for contour_b in contours_b:
             # 緑色の箱の輪郭を検出
-            if cv2.contourArea(contour_b) > 100:  # 面積が小さいものは無視
+            if cv2.contourArea(contour_b) > 500:  # 面積が小さいものは無視
                 green_box = cv2.boundingRect(contour_b)  # 緑色の箱のバウンディングボックスを取得
                 cv2.rectangle(frame, (green_box[0], green_box[1]), 
                             (green_box[0] + green_box[2], green_box[1] + green_box[3]), 
-                            (0, 255, 0), 2)  # 緑色の箱に矩形を描画緑
+                            (255, 0, 0), 2)  # 緑色の箱に矩形を描画青
 
 
 def main(args=None):
