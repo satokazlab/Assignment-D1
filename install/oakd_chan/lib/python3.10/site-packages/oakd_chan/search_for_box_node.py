@@ -71,19 +71,19 @@ class SearchForBoxNode(Node):
         
         # OpenCV形式のフレームに変換
         frame = in_rgb.getCvFrame() #表示用
-        frame1 = q_depth.getFrame()
+        depth_frame = q_depth.getFrame() #深度フレーム
 
         # 深度画像を表示（OpenCVを使って）
-        depth_image = frame1.astype(np.uint16)  # 16ビット深度画像
+        depth_image = depth_frame.astype(np.uint16)  # 16ビット深度画像
         cv2.imshow("Depth Image", depth_image)
 
         #箱検出関数 
-        self.box_detection(frame)
+        self.box_detection(frame, depth_frame)
 
         # メインの画像を表示
         # self.get_logger().info("画像出すよ")
         cv2.imshow("Color", frame)
-        # cv2.imshow("Depth", frame1)
+        # cv2.imshow("Depth", depth_frame)
         cv2.waitKey(1)
 
 
@@ -92,7 +92,7 @@ class SearchForBoxNode(Node):
     ######################
 
     #箱検出関数(紙検出ポリゴン化関数含む)
-    def box_detection(self, frame):
+    def box_detection(self, frame, depth_frame):
         # 1. 緑色の範囲をHSVで定義
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #1.5 ぼかす
@@ -103,23 +103,42 @@ class SearchForBoxNode(Node):
         # upper_green = np.array([80, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        lower_green = np.array([95, 100, 60])   # HSVで青色の下限  広すぎる。
-        upper_green = np.array([115, 255, 255])  # HSVで青色の上限
+        lower_blue = np.array([95, 100, 60])   # HSVで青色の下限  広すぎる。
+        upper_blue = np.array([115, 255, 255])  # HSVで青色の上限
+
+        # 2. 画像の下半分を切り出す
+        height, width = blurred_image.shape[:2]
+        bottom_half = blurred_image[height // 2:, :]  # 高さの半分から下
         
         # 緑色部分のマスクを作成
-        mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
+        mask_blue = cv2.inRange(bottom_half, lower_blue, upper_blue)
         
         # 2. マスクを使って緑の箱を検出
-        contours_b, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours_b, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        green_box = None
+        blue_box = None
         for contour_b in contours_b:
             # 緑色の箱の輪郭を検出
             if cv2.contourArea(contour_b) > 500:  # 面積が小さいものは無視
-                green_box = cv2.boundingRect(contour_b)  # 緑色の箱のバウンディングボックスを取得
-                cv2.rectangle(frame, (green_box[0], green_box[1]), 
-                            (green_box[0] + green_box[2], green_box[1] + green_box[3]), 
-                            (255, 0, 0), 2)  # 緑色の箱に矩形を描画青
+                blue_box = cv2.boundingRect(contour_b)  # 緑色の箱のバウンディングボックスを取得
+
+                # y座標を元のフレーム基準に調整（下半分に対応）
+                adjusted_y = blue_box[1] + height // 2
+
+                # 深度カメラから距離を取得（範囲内に収める）
+                # 深度画像の範囲チェック
+                y_idx = min(adjusted_y + blue_box[1], depth_frame.shape[0] - 1)
+                x_idx = min(blue_box[0] + blue_box[0], depth_frame.shape[1] - 1)
+                
+                depth_value = depth_frame[y_idx, x_idx]  # 修正されたインデックスを使用
+
+                # 距離を表示
+                print(f"Distance to the box: {depth_value} meters")
+
+                # フレームに矩形を描画 青
+                cv2.rectangle(frame, (blue_box[0] , adjusted_y), 
+                              (blue_box[0] + blue_box[2], adjusted_y + blue_box[3]), 
+                              (255, 0, 0), 2)
 
 
 def main(args=None):
