@@ -10,6 +10,14 @@ import time
 class SearchForBoxNode(Node):
     def __init__(self):
         super().__init__('search_for_box_node')
+
+        #出力解像度
+        self.image_width = 320
+        self.image_height = 240
+
+        self.FOV_horizontal = 90  # 水平視野角 (度)
+        self.FOV_vertical = 60    # 垂直視野角 (度)
+
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
@@ -24,7 +32,7 @@ class SearchForBoxNode(Node):
         # カラーカメラノードの作成と設定
         cam_rgb = pipeline.createColorCamera()
         
-        cam_rgb.setPreviewSize(320, 240)
+        cam_rgb.setPreviewSize(self.image_width, self.image_height)
         cam_rgb.setInterleaved(False)
         cam_rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
         cam_rgb.setFps(30)
@@ -41,7 +49,7 @@ class SearchForBoxNode(Node):
 
         # Depthカメラの設定
         cam_depth = pipeline.create(dai.node.StereoDepth)
-        cam_depth.setOutputSize(320, 240)  # depthの出力解像度を小さくする
+        cam_depth.setOutputSize(self.image_width, self.image_height)  # depthの出力解像度を小さくする
         # cam_depth.setInput(left_camera, right_camera)  # 左右のカメラを入力に指定
         cam_depth.initialConfig.setConfidenceThreshold(200)
         cam_depth.setDepthAlign(dai.CameraBoardSocket.RGB)
@@ -75,10 +83,18 @@ class SearchForBoxNode(Node):
 
         # 深度画像を表示（OpenCVを使って）
         depth_image = depth_frame.astype(np.uint16)  # 16ビット深度画像
-        cv2.imshow("Depth Image", depth_image)
+        # cv2.imshow("Depth Image", depth_image)
 
         #箱検出関数 
         self.box_detection(frame, depth_frame)
+
+        center_x = 160  # 箱の中心 x 座標
+        center_y = 120  # 箱の中心 y 座標
+
+        angle_x, angle_y = self.calculate_box_direction(center_x, center_y, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
+        # print(f"箱の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
+        print(f"箱の方向: 水平方向 {angle_x}度")
+
 
         # メインの画像を表示
         # self.get_logger().info("画像出すよ")
@@ -132,13 +148,35 @@ class SearchForBoxNode(Node):
                 
                 depth_value = depth_frame[y_idx, x_idx]  # 修正されたインデックスを使用
 
+                # 深度画像のインデックスをフレームの範囲内に収める
+                center_x = min(max(blue_box[0] + blue_box[2] // 2, 0), depth_frame.shape[1] - 1)
+                center_y = min(max(blue_box[1] + blue_box[3] // 2 + height // 2, 0), depth_frame.shape[0] - 1)
+
+
+                depth_value = depth_frame[center_y, center_x]  # 修正されたインデックスを使用
+
                 # 距離を表示
                 print(f"Distance to the box: {depth_value} meters")
+
+
+
+                cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)  # 赤色の点を描画
 
                 # フレームに矩形を描画 青
                 cv2.rectangle(frame, (blue_box[0] , adjusted_y), 
                               (blue_box[0] + blue_box[2], adjusted_y + blue_box[3]), 
                               (255, 0, 0), 2)
+                
+
+    # 水平と垂直方向の角度を計算
+    def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):
+        
+        angle_x = (center_x - image_width / 2) / (image_width / 2) * FOV_horizontal / 2
+        angle_y = (center_y - image_height / 2) / (image_height / 2) * FOV_vertical / 2
+
+        return angle_x, angle_y
+
+
 
 
 def main(args=None):
