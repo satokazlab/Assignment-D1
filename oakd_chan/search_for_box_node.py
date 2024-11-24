@@ -16,7 +16,7 @@ class SearchForBoxNode(Node):
         self.image_height = 240
 
         self.FOV_horizontal = 90  # 水平視野角 (度)
-        self.FOV_vertical = 60    # 垂直視野角 (度)
+        self.FOV_vertical = 69    # 垂直視野角 (度)
 
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
@@ -88,12 +88,7 @@ class SearchForBoxNode(Node):
         #箱検出関数 
         self.box_detection(frame, depth_frame)
 
-        center_x = 160  # 箱の中心 x 座標
-        center_y = 120  # 箱の中心 y 座標
 
-        angle_x, angle_y = self.calculate_box_direction(center_x, center_y, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
-        # print(f"箱の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
-        print(f"箱の方向: 水平方向 {angle_x}度")
 
 
         # メインの画像を表示
@@ -146,11 +141,14 @@ class SearchForBoxNode(Node):
                 center_y = min(max(blue_box[1] + blue_box[3] // 2 + height // 2, 0), depth_frame.shape[0] - 1)
                 cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)  # 箱の中心に赤色の点を描画
 
-                depth_value = depth_frame[center_y, center_x]  # 修正されたインデックスを使用
+                depth_value = depth_frame[center_y, center_x]  # 箱の中心までの距離
 
                 # 箱の中心までの距離を表示
                 print(f"Distance to the box: {depth_value} meters")
-
+                
+                angle_x, angle_y = self.calculate_box_direction(center_x, center_y, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
+                # print(f"箱の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
+                print(f"箱の方向: 水平方向 {angle_x}度")
                 
 
                 # フレームに矩形を描画 青枠
@@ -158,6 +156,18 @@ class SearchForBoxNode(Node):
                               (blue_box[0] + blue_box[2], adjusted_y + blue_box[3]), 
                               (255, 0, 0), 2)
                 
+                 # 距離情報を描画
+                distance_text = f"{depth_value:.2f} m, {angle_x:.1f}deg"
+                # cv2.putText(frame, distance_text, (blue_box[0], adjusted_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+                # 文字をフレーム中央に描画
+                cv2.putText(frame, 
+                            distance_text, 
+                            (5,30),  # 描画位置
+                            cv2.FONT_HERSHEY_SIMPLEX,  # フォント
+                            1,  # フォントサイズ
+                            (255, 255, 255),  # テキスト色（白）
+                            2,  # 線の太さ
+                            cv2.LINE_AA)  # アンチエイリアス
 
     # 水平と垂直方向の角度を計算
     def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):
