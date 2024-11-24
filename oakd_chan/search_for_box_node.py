@@ -27,8 +27,39 @@ class SearchForBoxNode(Node):
 
     def initialize_pipeline(self):
         """Initialize the DepthAI pipeline."""
-        # DepthAIパイプラインの作成
+        # 接続されているすべてのデバイス情報を取得
+        available_devices = dai.Device.getAllAvailableDevices()
+
+        if not available_devices:
+            print("No devices found!")
+            exit()
+
+        print("Available devices:")
+        for i, device in enumerate(available_devices):
+            print(f"{i}: {device.getMxId()} ({device.state.name})")
+
+        # 使用したいデバイスのシリアル番号を指定
+        target_serial = "18443010A1D5F50800"  # 任意のシリアル番号に置き換え
+
+        # 対応するデバイスを探す
+        target_device_info = None
+        for device in available_devices:
+            if device.getMxId() == target_serial:
+                target_device_info = device
+                break
+
+        if target_device_info is None:
+            print(f"Device with serial {target_serial} not found!")
+            exit()
+
+        # パイプラインを作成
         pipeline = dai.Pipeline()
+        # 必要なノード設定をここに記述...
+
+        # 特定のデバイスでパイプラインを実行
+        with dai.Device(pipeline, target_device_info) as device:
+            print(f"Using device: {device.getMxId()}")
+
         # カラーカメラノードの作成と設定
         cam_rgb = pipeline.createColorCamera()
         

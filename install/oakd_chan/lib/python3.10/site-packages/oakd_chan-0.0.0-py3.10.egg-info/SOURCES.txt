@@ -12,6 +12,7 @@ oakd_chan/__init__.py
 oakd_chan/alphabet_detection_node.py
 oakd_chan/oakd_chan_node.py
 oakd_chan/search_for_box_node.py
+oakd_chan/serial_check.py
 resource/oakd_chan
 test/test_copyright.py
 test/test_flake8.py
