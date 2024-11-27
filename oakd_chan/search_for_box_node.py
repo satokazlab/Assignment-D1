@@ -208,6 +208,7 @@ class SearchForBoxNode(Node):
                             (255, 255, 255),  # テキスト色（白）
                             2,  # 線の太さ
                             cv2.LINE_AA)  # アンチエイリアス
+                            
     def adjust_gamma(self, image, gamma=1.5):
         invGamma = 1.0 / gamma
         table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
