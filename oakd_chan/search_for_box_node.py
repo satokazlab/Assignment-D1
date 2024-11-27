@@ -110,6 +110,7 @@ class SearchForBoxNode(Node):
         
         # OpenCV形式のフレームに変換
         frame = in_rgb.getCvFrame() #表示用
+        frame2 = in_rgb.getCvFrame()
         depth_frame = q_depth.getFrame() #深度フレーム
 
         # 深度画像を表示（OpenCVを使って）
@@ -117,7 +118,7 @@ class SearchForBoxNode(Node):
         # cv2.imshow("Depth Image", depth_image)
 
         #箱検出関数 
-        self.box_detection(frame, depth_frame)
+        self.box_detection(frame, depth_frame, frame2)
 
 
 
@@ -125,6 +126,7 @@ class SearchForBoxNode(Node):
         # メインの画像を表示
         # self.get_logger().info("画像出すよ")
         cv2.imshow("Color", frame)
+        cv2.imshow("ヒストColor", frame2)
         # cv2.imshow("Depth", depth_frame)
         cv2.waitKey(1)
 
@@ -134,9 +136,16 @@ class SearchForBoxNode(Node):
     ######################
 
     #箱検出関数(紙検出ポリゴン化関数含む)
-    def box_detection(self, frame, depth_frame):
+    def box_detection(self, frame, depth_frame, frame2):
+
+        # ガンマ補正の適用 日陰補正
+        frame2 = self.adjust_gamma(frame2, gamma=1.5)
+
         # 1. 緑色の範囲をHSVで定義
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(frame2, cv2.COLOR_BGR2HSV)
+
+        frame2 = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
         #1.5 ぼかす
         blurred_image = cv2.GaussianBlur(hsv, (5, 5), 0)
 
@@ -161,7 +170,7 @@ class SearchForBoxNode(Node):
         blue_box = None
         for contour_b in contours_b:
             # 緑色の箱の輪郭を検出
-            if cv2.contourArea(contour_b) > 500:  # 面積が小さいものは無視
+            if cv2.contourArea(contour_b) > 200:  # 面積が小さいものは無視
                 blue_box = cv2.boundingRect(contour_b)  # 青色の箱のバウンディングボックスを取得
 
                 # y座標を元のフレーム基準に調整（下半分に対応）
@@ -199,6 +208,10 @@ class SearchForBoxNode(Node):
                             (255, 255, 255),  # テキスト色（白）
                             2,  # 線の太さ
                             cv2.LINE_AA)  # アンチエイリアス
+    def adjust_gamma(self, image, gamma=1.5):
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
+        return cv2.LUT(image, table)
 
     # 水平と垂直方向の角度を計算
     def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):
