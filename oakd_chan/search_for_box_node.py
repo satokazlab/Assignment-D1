@@ -15,8 +15,8 @@ class SearchForBoxNode(Node):
         self.image_width = 320
         self.image_height = 240
 
-        self.FOV_horizontal = 90  # 水平視野角 (度)
-        self.FOV_vertical = 69    # 垂直視野角 (度)
+        self.FOV_horizontal = 69  # 水平視野角 (度)
+        self.FOV_vertical = 55    # 垂直視野角 (度)
 
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
