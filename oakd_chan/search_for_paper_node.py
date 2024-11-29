@@ -13,15 +13,18 @@ import time
 class SearchForPaperNode(Node):
     def __init__(self):
         super().__init__('search_for_paper_node')
+
+                #出力解像度
+        self.image_width = 320
+        self.image_height = 240
+
+        self.FOV_horizontal = 69  # 水平視野角 (度)
+        self.FOV_vertical = 55    # 垂直視野角 (度)
+
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
         # self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
-        
-        # 文字認識結果を保存するリスト
-        self.recognized_texts = []
-        # 特定の文字をカウントするためのカウンタ
-        self.char_count = {'a': 0, 'A': 0, 'b': 0, 'B': 0, 'c': 0, 'C': 0}  
 
         self.start_time = None  # 文字の認識開始時刻を保存
         self.timer_started = False  # タイマーが開始されたかどうかを示すフラグ
@@ -63,36 +66,67 @@ class SearchForPaperNode(Node):
         # 特定のデバイスでパイプラインを実行
         with dai.Device(pipeline, target_device_info) as device:
             print(f"Using device: {device.getMxId()}")
+
         # カラーカメラノードの作成と設定
         cam_rgb = pipeline.createColorCamera()
-        cam_rgb.setPreviewSize(320, 240)
+
+
+        cam_rgb.setPreviewSize(self.image_width, self.image_height)
         cam_rgb.setInterleaved(False)
         cam_rgb.setBoardSocket(dai.CameraBoardSocket.RGB)
         cam_rgb.setFps(30)
+
+        # 左カメラの設定
+        left_camera = pipeline.create(dai.node.MonoCamera)
+        left_camera.setBoardSocket(dai.CameraBoardSocket.LEFT)
+        left_camera.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P) # 720
+
+        # 右カメラの設定
+        right_camera = pipeline.create(dai.node.MonoCamera)
+        right_camera.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+        right_camera.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
+
+        # Depthカメラの設定
+        cam_depth = pipeline.create(dai.node.StereoDepth)
+        cam_depth.setOutputSize(self.image_width, self.image_height)  # depthの出力解像度を小さくする
+        # cam_depth.setInput(left_camera, right_camera)  # 左右のカメラを入力に指定
+        cam_depth.initialConfig.setConfidenceThreshold(200)
+        cam_depth.setDepthAlign(dai.CameraBoardSocket.RGB)
+        cam_depth.setConfidenceThreshold(255)
+        cam_depth.setSubpixel(False)
+        cam_depth.setRectifyEdgeFillColor(0)  # 黒でエッジを埋める
+
+        # 左右のカメラをStereoDepthノードに接続
+        left_camera.out.link(cam_depth.left)
+        right_camera.out.link(cam_depth.right)
 
         # XLinkOutノードの作成（ホストへのデータ出力用）
         xout_rgb = pipeline.createXLinkOut()
         xout_rgb.setStreamName("rgb")
         cam_rgb.preview.link(xout_rgb.input)
 
+        xout_depth = pipeline.create(dai.node.XLinkOut)
+        xout_depth.setStreamName("depth")
+        cam_depth.depth.link(xout_depth.input)
+
         return dai.Device(pipeline)
 
     def timer_callback(self):  #コールバック関数
 
         in_rgb = self.device.getOutputQueue(name="rgb", maxSize=4, blocking=False).get()
+        q_depth = self.device.getOutputQueue(name="depth", maxSize=8, blocking=False).get()
 
         # OpenCV形式のフレームに変換
         frame = in_rgb.getCvFrame() #表示用
         frame1 = frame.copy()       #認識用
-        frame2 = frame.copy()       #歪み補正チェック用
+        depth_frame = q_depth.getFrame() #深度フレーム
 
         #箱検出関数 〜 文字検出まで
-        self.box_detection(frame, frame1, frame2)
+        self.box_detection(frame, frame1, depth_frame)
 
         # メインの画像を表示
         cv2.imshow("Image of Detected Lines", frame)
         cv2.waitKey(1)
-
 
 
     ######################
@@ -100,7 +134,7 @@ class SearchForPaperNode(Node):
     ######################
 
     #箱検出関数(紙検出ポリゴン化関数含む)
-    def box_detection(self, frame, frame1, frame2):
+    def box_detection(self, frame, frame1, depth_frame):
         # 1. 緑色の範囲をHSVで定義
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #1.5 ぼかす
@@ -120,21 +154,31 @@ class SearchForPaperNode(Node):
         # 2. マスクを使って緑の箱を検出
         contours_b, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
+        max_area_g = 0
+        max_counter_g = None # 最大面積の輪郭を格納
         green_box = None
+
         for contour_b in contours_b:
             # 緑色の箱の輪郭を検出
             if cv2.contourArea(contour_b) > 100:  # 面積が小さいものは無視
-                green_box = cv2.boundingRect(contour_b)  # 緑色の箱のバウンディングボックスを取得
-                cv2.rectangle(frame, (green_box[0], green_box[1]), 
-                            (green_box[0] + green_box[2], green_box[1] + green_box[3]), 
-                            (0, 255, 0), 2)  # 緑色の箱に矩形を描画緑
+                area = cv2.contourArea(contour_b)
+                if area > max_area_g:  # 最大面積を更新
+                    max_area_g = area
+                    max_counter_g = contour_b  # 最大面積の輪郭のバウンディングボックス
+
+        # 最大の緑色の箱のバウンディングボックスが見つかった場合
+        if max_counter_g is not None:
+            green_box = cv2.boundingRect(max_counter_g)  # 緑色の箱のバウンディングボックスを取得
+            cv2.rectangle(frame, (green_box[0], green_box[1]), 
+                        (green_box[0] + green_box[2], green_box[1] + green_box[3]), 
+                        (0, 255, 0), 2)  # 緑色の箱に矩形を描画緑
                 
         #紙検出関数
-        self.paper_detection(green_box, frame, frame1, frame2)
+        self.paper_detection(green_box, frame, frame1, depth_frame)
 
 
     #紙検出ポリゴン化関数(歪み補正関数含む)
-    def paper_detection(self, green_box, frame, frame1, frame2):
+    def paper_detection(self, green_box, frame, frame1, depth_frame):
         if green_box is not None: #引数：green_box frame1  返し:contours?
             wx, wy, ww, wh = green_box
             # 3. 緑色の箱の内部から白い紙を検出
@@ -154,33 +198,70 @@ class SearchForPaperNode(Node):
             cv2.imshow("white_mask", white_mask)
             cv2.moveWindow("white_mask", 0, 0)    # 紙が四角形で出ているか？
 
-            # 5.5 2値画像の白色部分を拡張 
-            # dilated_image = cv2.dilate(white_mask, np.ones((2, 2), np.uint8), iterations=1)
-
             # 7. 紙の2値画像の輪郭を検出
             contours_p, _ = cv2.findContours(white_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             #2値画像から紙をポリゴン化
+            # 最大面積を持つ輪郭を見つける
+            max_area_p = 0
+            max_contour = None
 
             #コピペゾーン https://qiita.com/sitar-harmonics/items/ac584f99043574670cf3
-            for i, cnt in enumerate(contours_p):
-                # 輪郭の周囲に比例する精度で輪郭を近似する
-                cnt_global = cnt + np.array([[wx, wy]])  # ROIの座標オフセットを追加
-                arclen = cv2.arcLength(cnt_global, True)
-                approx = cv2.approxPolyDP(cnt_global, arclen*0.1, True) #0.02だと低すぎる。0.1だとかなり余裕。
+            for cnt in contours_p:
+                    if cv2.contourArea(cnt) > 300:  # 面積が小さいものは無視
+                        area = cv2.contourArea(cnt)
+                        if area > max_area_p:  # 最大面積を更新
+                            max_area_p = area
+                            max_contour = cnt
 
-                #四角形の輪郭は、近似後に4つの頂点があります。
-                #比較的広い領域が凸状になります。
-                # 凸性の確認 
+            # 最大面積の輪郭のバウンディングボックスを取得
+            if max_contour is not None:
+               # 紙の輪郭を検出
+                paper_position = cv2.boundingRect(max_contour)  # 紙のバウンディングボックスを取得
+
+                # 箱の中心座標
+                center_x = paper_position[0] + paper_position[2] // 2
+                center_y = paper_position[1] + paper_position[3] // 2 
+
+                center_gx = wx + center_x
+                center_gy = wy + center_y
+
+                cv2.circle(frame, (center_gx, center_gy), 5, (0, 0, 255), -1)  # 紙の中心に赤色の点を描画
+
+                depth_value = depth_frame[center_gy, center_gx]  # 紙の中心までの距離
+
+                # 箱の中心までの距離を表示
+                print(f"Distance to the box: {depth_value} meters")
                 
-                #歪み補正関数(文字認識関数含む)
-                self.distortion_correction(approx, frame, frame2)
+                angle_x, angle_y = self.calculate_box_direction(center_gx, center_gy, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
+                # print(f"箱の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
+                print(f"箱の方向: 水平方向 {angle_x}度")
+                
+
+                # フレームに矩形を描画 青枠
+                cv2.rectangle(frame, (paper_position[0] + wx , paper_position[1] + wy ), 
+                            (paper_position[0] + paper_position[2] + wx, paper_position[1] + paper_position[3] + wy ), 
+                            (255, 0, 0), 2)
+                
+                # 距離情報を描画
+                distance_text = f"{depth_value:.2f} m, {angle_x:.1f}deg"
+                # cv2.putText(frame, distance_text, (paper_position[0], paper_position[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+                # 文字をフレーム中央に描画
+                cv2.putText(frame, 
+                            distance_text, 
+                            (5,30),  # 描画位置
+                            cv2.FONT_HERSHEY_SIMPLEX,  # フォント
+                            1,  # フォントサイズ
+                            (255, 255, 255),  # テキスト色（白）
+                            2,  # 線の太さ
+                            cv2.LINE_AA)  # アンチエイリアス
 
 
-    #歪み補正関数(文字認識関数含む)
+    #歪み補正関数
     def distortion_correction(self, approx, frame, frame2):
-        area = abs(cv2.contourArea(approx))
+        area = abs(cv2.contourArea(approx))  #映像での紙のサイズ
         if approx.shape[0] == 4 and area > 500 and cv2.isContourConvex(approx) :
+            self.get_logger().info(f"Contour Area: {area}")
 
             maxCosine = 0
 
@@ -236,7 +317,13 @@ class SearchForPaperNode(Node):
                 cv2.imshow("Warped A5", warped)
                 cv2.moveWindow("Waroed A5", 0, 0)   
 
+    # 水平と垂直方向の角度を計算
+    def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):
+        
+        angle_x = (center_x - image_width / 2) / (image_width / 2) * FOV_horizontal / 2
+        angle_y = (center_y - image_height / 2) / (image_height / 2) * FOV_vertical / 2
 
+        return angle_x, angle_y
 
 
 # pt0-> pt1およびpt0-> pt2からの
