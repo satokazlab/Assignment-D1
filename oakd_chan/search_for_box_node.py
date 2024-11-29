@@ -121,8 +121,6 @@ class SearchForBoxNode(Node):
         self.box_detection(frame, depth_frame, frame2)
 
 
-
-
         # メインの画像を表示
         # self.get_logger().info("画像出すよ")
         cv2.imshow("Color", frame)
