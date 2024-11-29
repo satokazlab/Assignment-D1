@@ -16,7 +16,7 @@ class AlphabetDetectionNode(Node):
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
-        self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
+        # self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
         
         # 文字認識結果を保存するリスト
         self.recognized_texts = []
@@ -34,8 +34,35 @@ class AlphabetDetectionNode(Node):
 
     def initialize_pipeline(self):
         """Initialize the DepthAI pipeline."""
+        # 接続されているすべてのデバイス情報を取得
+        available_devices = dai.Device.getAllAvailableDevices()
+
+        if not available_devices:
+            print("No devices found!")
+            exit()
+
+        print("Available devices:")
+        for i, device in enumerate(available_devices):
+            print(f"{i}: {device.getMxId()} ({device.state.name})")
+
+        # 使用したいデバイスのシリアル番号を指定
+        target_serial = "18443010A1D5F50800"  # 任意のシリアル番号に置き換え
+
+        # 対応するデバイスを探す
+        target_device_info = None
+        for device in available_devices:
+            if device.getMxId() == target_serial:
+                target_device_info = device
+                break
+
+        if target_device_info is None:
+            print(f"Device with serial {target_serial} not found!")
+            exit()
         # DepthAIパイプラインの作成
         pipeline = dai.Pipeline()
+        # 特定のデバイスでパイプラインを実行
+        with dai.Device(pipeline, target_device_info) as device:
+            print(f"Using device: {device.getMxId()}")
         # カラーカメラノードの作成と設定
         cam_rgb = pipeline.createColorCamera()
         cam_rgb.setPreviewSize(320, 240)

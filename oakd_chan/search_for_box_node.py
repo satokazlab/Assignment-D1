@@ -21,7 +21,7 @@ class SearchForBoxNode(Node):
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
-        self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
+        # self.image_pub = self.create_publisher(Image, 'camera/image_raw', 3)
         # 30FPSでタイマーを設定し、コールバックを実行
         self.timer = self.create_timer(0.03, self.timer_callback)
 
