@@ -1,0 +1,27 @@
+[1.687s] Invoking command in '/home/suguta/naka2_ws/src/oakd_chan': PYTHONPATH=/home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base build/oakd_chan build --build-base /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build install --record /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/install.log --single-version-externally-managed install_data
+[2.361s] running egg_info
+[2.391s] writing build/oakd_chan/oakd_chan.egg-info/PKG-INFO
+[2.391s] writing dependency_links to build/oakd_chan/oakd_chan.egg-info/dependency_links.txt
+[2.391s] writing entry points to build/oakd_chan/oakd_chan.egg-info/entry_points.txt
+[2.392s] writing requirements to build/oakd_chan/oakd_chan.egg-info/requires.txt
+[2.392s] writing top-level names to build/oakd_chan/oakd_chan.egg-info/top_level.txt
+[2.452s] reading manifest file 'build/oakd_chan/oakd_chan.egg-info/SOURCES.txt'
+[2.453s] writing manifest file 'build/oakd_chan/oakd_chan.egg-info/SOURCES.txt'
+[2.453s] running build
+[2.453s] running build_py
+[2.453s] copying oakd_chan/search_for_box_node.py -> /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build/lib/oakd_chan
+[2.453s] running install
+[2.459s] running install_lib
+[2.489s] copying /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build/lib/oakd_chan/search_for_box_node.py -> /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan
+[2.490s] byte-compiling /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan/search_for_box_node.py to search_for_box_node.cpython-310.pyc
+[2.491s] running install_data
+[2.491s] running install_egg_info
+[2.522s] removing '/home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan-0.0.0-py3.10.egg-info' (and everything under it)
+[2.522s] Copying build/oakd_chan/oakd_chan.egg-info to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages/oakd_chan-0.0.0-py3.10.egg-info
+[2.523s] running install_scripts
+[2.635s] Installing alphabet_detection_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+[2.635s] Installing alphabet_detection_real_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+[2.635s] Installing oakd_chan_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+[2.635s] Installing search_for_box_node script to /home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/oakd_chan
+[2.635s] writing list of installed files to '/home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/install.log'
+[2.680s] Invoked command in '/home/suguta/naka2_ws/src/oakd_chan' returned '0': PYTHONPATH=/home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/suguta/naka2_ws/src/oakd_chan/install/oakd_chan/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base build/oakd_chan build --build-base /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/build install --record /home/suguta/naka2_ws/src/oakd_chan/build/oakd_chan/install.log --single-version-externally-managed install_data
