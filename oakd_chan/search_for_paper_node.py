@@ -135,6 +135,10 @@ class SearchForPaperNode(Node):
 
     #箱検出関数(紙検出ポリゴン化関数含む)
     def box_detection(self, frame, frame1, depth_frame):
+
+        # ガンマ補正の適用 日陰補正
+        frame = self.adjust_gamma(frame, gamma=1.5)
+
         # 1. 緑色の範囲をHSVで定義
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #1.5 ぼかす
@@ -313,9 +317,16 @@ class SearchForPaperNode(Node):
                 M = cv2.getPerspectiveTransform(rect, dst)
                 warped = cv2.warpPerspective(frame2, M, (maxWidth, maxHeight))
 
+                
                 # 結果を表示
+                cv2.imshow("Debug Frame", frame)
                 cv2.imshow("Warped A5", warped)
                 cv2.moveWindow("Waroed A5", 0, 0)   
+
+    def adjust_gamma(self, image, gamma=1.5):
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
+        return cv2.LUT(image, table)
 
     # 水平と垂直方向の角度を計算
     def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):

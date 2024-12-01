@@ -90,7 +90,7 @@ class AlphabetDetectionNode(Node):
         self.box_detection(frame, frame1, frame2)
 
         # メインの画像を表示
-        cv2.imshow("Image of Detected Lines", frame)
+        # cv2.imshow("main", frame)
         cv2.waitKey(1)
 
 
@@ -101,18 +101,27 @@ class AlphabetDetectionNode(Node):
 
     #箱検出関数(紙検出ポリゴン化関数含む)
     def box_detection(self, frame, frame1, frame2):
+
+        # ガンマ補正の適用 日陰補正
+        frame = self.adjust_gamma(frame, gamma=1.5)
+        
+
+
+        if frame.dtype != 'uint8':
+            frame = cv2.convertScaleAbs(frame)  # 描画用にデータ型を変換
+
         # 1. 緑色の範囲をHSVで定義
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #1.5 ぼかす
         blurred_image = cv2.GaussianBlur(hsv, (5, 5), 0)
 
         # 緑色の範囲を定義
-        # lower_green = np.array([40, 40, 40])   # HSVで緑色の下限
-        # upper_green = np.array([80, 255, 255])  # HSVで緑色の上限
+        lower_green = np.array([50, 40, 40])   # HSVで緑色の下限
+        upper_green = np.array([70, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        lower_green = np.array([90, 60, 60])   # HSVで青色の下限
-        upper_green = np.array([150, 255, 255])  # HSVで青色の上限
+        # lower_green = np.array([90, 60, 60])   # HSVで青色の下限
+        # upper_green = np.array([150, 255, 255])  # HSVで青色の上限
         
         # 緑色部分のマスクを作成
         mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
@@ -196,6 +205,7 @@ class AlphabetDetectionNode(Node):
                 rcnt = approx.reshape(-1,2)
                 # cv2.polylines(frame, [rcnt], True, (0,0,255), thickness=2, lineType=cv2.LINE_8)
                 cv2.fillPoly(frame, [rcnt], (0,0,255), lineType=cv2.LINE_8)
+                cv2.imshow("Debug Frame", frame)
 
                 ## 以降歪み補正
                 # 頂点を並び替える関数
@@ -328,6 +338,11 @@ class AlphabetDetectionNode(Node):
         if self.later_timer is not None:
             self.later_timer.cancel()
             self.later_timer = None
+
+    def adjust_gamma(self, image, gamma=1.5):
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
+        return cv2.LUT(image, table)
 
 # pt0-> pt1およびpt0-> pt2からの
 # ベクトル間の角度の余弦(コサイン)を算出

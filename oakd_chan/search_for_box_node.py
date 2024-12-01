@@ -148,8 +148,8 @@ class SearchForBoxNode(Node):
         blurred_image = cv2.GaussianBlur(hsv, (5, 5), 0)
 
         # 緑色の範囲を定義
-        # lower_green = np.array([40, 40, 40])   # HSVで緑色の下限
-        # upper_green = np.array([80, 255, 255])  # HSVで緑色の上限
+        # lower_green = np.array([50, 40, 40])   # HSVで緑色の下限
+        # upper_green = np.array([70, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
         lower_blue = np.array([95, 100, 60])   # HSVで青色の下限  広すぎる。
@@ -206,6 +206,7 @@ class SearchForBoxNode(Node):
                             (255, 255, 255),  # テキスト色（白）
                             2,  # 線の太さ
                             cv2.LINE_AA)  # アンチエイリアス
+                cv2.imshow("Debug Frame", frame)
                             
     def adjust_gamma(self, image, gamma=1.5):
         invGamma = 1.0 / gamma
