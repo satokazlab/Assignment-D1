@@ -1,5 +1,6 @@
 import rclpy #文字を認識するコード
 from rclpy.node import Node
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image
 import depthai as dai  # DepthAIライブラリ
 from cv_bridge import CvBridge
@@ -13,6 +14,10 @@ import time
 class SearchForPaperNode(Node):
     def __init__(self):
         super().__init__('search_for_paper_node')
+
+         # パブリッシャーの初期化
+        self.depth_publisher = self.create_publisher(Float32, '/paper_depth', 10)
+        self.angle_publisher = self.create_publisher(Float32, '/paper_angle_x', 10)
 
                 #出力解像度
         self.image_width = 320
@@ -244,6 +249,9 @@ class SearchForPaperNode(Node):
                 angle_x, angle_y = self.calculate_box_direction(center_gx, center_gy, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
                 # print(f"紙の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
                 # print(f"紙の方向: 水平方向 {angle_x}度")
+
+                # データをパブリッシュ
+                self.publish_depth_and_angle(depth_value, angle_x)
                 
                 self.measure_depth(depth_value)
 
@@ -332,6 +340,19 @@ class SearchForPaperNode(Node):
         invGamma = 1.0 / gamma
         table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
         return cv2.LUT(image, table)
+
+    def publish_depth_and_angle(self, depth_value, angle_x):
+        # depth_valueをパブリッシュ
+        depth_msg = Float32()
+        depth_msg.data = depth_value
+        self.depth_publisher.publish(depth_msg)
+        self.get_logger().info(f"Published depth: {depth_value}")
+
+        # angle_xをパブリッシュ
+        angle_msg = Float32()
+        angle_msg.data = angle_x
+        self.angle_publisher.publish(angle_msg)
+        self.get_logger().info(f"Published angle_x: {angle_x}")
 
     # 水平と垂直方向の角度を計算
     def calculate_box_direction(self, center_x, center_y, image_width, image_height, FOV_horizontal, FOV_vertical):
