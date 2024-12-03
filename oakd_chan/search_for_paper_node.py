@@ -355,9 +355,10 @@ class SearchForPaperNode(Node):
         #self.get_logger().info(f'Added new depth value: {depth_value}')
 
         # 平均値を計算してログを表示
-        avg_depth = sum(self.depth_values) / len(self.depth_values)
-        #self.get_logger().info(f'Current depth values: {self.depth_values}')
-        self.get_logger().info(f'Current average = {avg_depth}')
+        if len(self.depth_values) == self.max_measurements:
+            avg_depth = sum(self.depth_values) / len(self.depth_values)
+            #self.get_logger().info(f'Current depth values: {self.depth_values}')
+            self.get_logger().info(f'Current average = {avg_depth}')
 
         # 1500mm以内か？
         if avg_depth < 1500:
