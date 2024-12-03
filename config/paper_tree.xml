@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <SetBlackboard name="PaperSearch" output_key="" value=""/>
+            <SetBlackboard name="AheadPaper" output_key="" value=""/>
+            <Parallel failure_threshold="1" name="GOGO" success_threshold="">
+                <AlwaysSuccess name="Go"/>
+                <SetBlackboard name="1.5meter" output_key="" value=""/>
+            </Parallel>
+            <SetBlackboard name="AheadPaper2" output_key="" value=""/>
+            <Parallel failure_threshold="1" name="Near" success_threshold="">
+                <SetBlackboard name="0.4meter" output_key="" value=""/>
+                <SetBlackboard name="AlphabetDetect" output_key="" value=""/>
+                <SetBlackboard name="SlowGo" output_key="" value=""/>
+            </Parallel>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel/>
+    <!-- ////////// -->
+</root>
