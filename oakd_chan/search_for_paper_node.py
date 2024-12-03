@@ -149,12 +149,12 @@ class SearchForPaperNode(Node):
         blurred_image = cv2.GaussianBlur(hsv, (5, 5), 0)
 
         # 緑色の範囲を定義
-        lower_green = np.array([50, 40, 40])   # HSVで緑色の下限
-        upper_green = np.array([70, 255, 255])  # HSVで緑色の上限
+        #lower_green = np.array([50, 40, 40])   # HSVで緑色の下限
+        #upper_green = np.array([70, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        # lower_green = np.array([90, 60, 60])   # HSVで青色の下限
-        # upper_green = np.array([150, 255, 255])  # HSVで青色の上限
+        lower_green = np.array([95, 60, 60])   # HSVで青色の下限
+        upper_green = np.array([115, 255, 255])  # HSVで青色の上限
         
         # 緑色部分のマスクを作成
         mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
@@ -239,7 +239,7 @@ class SearchForPaperNode(Node):
                 depth_value = depth_frame[center_gy, center_gx]  # 紙の中心までの距離
 
                 # 箱の中心までの距離を表示
-                print(f"Distance to the box: {depth_value} mm")
+                #print(f"Distance to the box: {depth_value} mm")
                 
                 angle_x, angle_y = self.calculate_box_direction(center_gx, center_gy, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
                 # print(f"紙の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
@@ -270,7 +270,7 @@ class SearchForPaperNode(Node):
     def distortion_correction(self, approx, frame, frame2):
         area = abs(cv2.contourArea(approx))  #映像での紙のサイズ
         if approx.shape[0] == 4 and area > 500 and cv2.isContourConvex(approx) :
-            self.get_logger().info(f"Contour Area: {area}")
+            #self.get_logger().info(f"Contour Area: {area}")
 
             maxCosine = 0
 
@@ -349,15 +349,15 @@ class SearchForPaperNode(Node):
         # 古い値を削除して新しい値を追加
         if len(self.depth_values) >= self.max_measurements:
             removed_value = self.depth_values.pop(0)  # 最も古い値を削除
-            self.get_logger().info(f'Removed oldest depth value: {removed_value}')
+           # self.get_logger().info(f'Removed oldest depth value: {removed_value}')
         
         self.depth_values.append(depth_value)# 新しい数を追加
-        self.get_logger().info(f'Added new depth value: {depth_value}')
+        #self.get_logger().info(f'Added new depth value: {depth_value}')
 
         # 平均値を計算してログを表示
         avg_depth = sum(self.depth_values) / len(self.depth_values)
-        self.get_logger().info(f'Current depth values: {self.depth_values}')
-        self.get_logger().info(f'Current average depth = {avg_depth}')
+        #self.get_logger().info(f'Current depth values: {self.depth_values}')
+        self.get_logger().info(f'Current average = {avg_depth}')
 
         # 1500mm以内か？
         if avg_depth < 1500:
