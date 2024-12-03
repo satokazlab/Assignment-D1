@@ -21,6 +21,10 @@ class SearchForPaperNode(Node):
         self.FOV_horizontal = 69  # 水平視野角 (度)
         self.FOV_vertical = 55    # 垂直視野角 (度)
 
+        # 紙との距離関係
+        self.depth_values = []  # depth_value を保存するリスト
+        self.max_measurements = 10  # 最大測定数（キューの長さ）
+
         # DepthAIパイプラインの作成
         self.device = self.initialize_pipeline()
         # ROS2のImageメッセージを送信するパブリッシャーの作成
@@ -235,12 +239,13 @@ class SearchForPaperNode(Node):
                 depth_value = depth_frame[center_gy, center_gx]  # 紙の中心までの距離
 
                 # 箱の中心までの距離を表示
-                print(f"Distance to the box: {depth_value} meters")
+                print(f"Distance to the box: {depth_value} mm")
                 
                 angle_x, angle_y = self.calculate_box_direction(center_gx, center_gy, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
-                # print(f"箱の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
-                print(f"箱の方向: 水平方向 {angle_x}度")
+                # print(f"紙の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
+                print(f"紙の方向: 水平方向 {angle_x}度")
                 
+                self.measure_depth(depth_value)
 
                 # フレームに矩形を描画 青枠
                 cv2.rectangle(frame, (paper_position[0] + wx , paper_position[1] + wy ), 
@@ -335,6 +340,28 @@ class SearchForPaperNode(Node):
         angle_y = (center_y - image_height / 2) / (image_height / 2) * FOV_vertical / 2
 
         return angle_x, angle_y
+
+    # 紙との距離確定
+    def measure_depth(self, depth_value):
+        # センサーから取得した値をシミュレート (ここは実際のセンサー値取得コードに置き換える)
+        self.depth_values.append(depth_value)
+
+        # 古い値を削除して新しい値を追加
+        if len(self.depth_values) >= self.max_measurements:
+            removed_value = self.depth_values.pop(0)  # 最も古い値を削除
+            self.get_logger().info(f'Removed oldest depth value: {removed_value}')
+        
+        self.depth_values.append(depth_value)# 新しい数を追加
+        self.get_logger().info(f'Added new depth value: {depth_value}')
+
+        # 平均値を計算してログを表示
+        avg_depth = sum(self.depth_values) / len(self.depth_values)
+        self.get_logger().info(f'Current depth values: {self.depth_values}')
+        self.get_logger().info(f'Current average depth = {avg_depth}')
+
+        # 1500mm以内か？
+        if avg_depth < 1500:
+            self.get_logger().warn(f'Warning: 1.5m以内だあああ!')
 
 
 # pt0-> pt1およびpt0-> pt2からの
