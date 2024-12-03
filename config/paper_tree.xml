@@ -5,19 +5,27 @@
         <Sequence>
             <Action ID="PaperSearch" name="paper_search"/>
             <Action ID="AheadPaper" name="ahead_paper"/>
-            <Parallel failure_threshold="1" name="GOGO" success_threshold="">
+            <Parallel failure_threshold="2" name="GOGO" success_threshold="2">
                 <AlwaysSuccess name="Go"/>
-                <Action name="1.5meter" />
+                <Action ID="Action" name="1.5meter"/>
             </Parallel>
-            <Action ID="AheadPaper2" name="ahead_paper" />
-            <Parallel failure_threshold="1" name="Near" success_threshold="">
-                <Action ID="FourMeter" name="four_meter" />
-                <Action ID="AlphabetDetect" name="alphabet_detect" />
-                <Action ID="SlowGo" name="slow_go" />
+            <Action ID="AheadPaper2" name="ahead_paper"/>
+            <Parallel failure_threshold="3" name="Near" success_threshold="3">
+                <Action ID="FourMeter" name="four_meter"/>
+                <Action ID="AlphabetDetect" name="alphabet_detect"/>
+                <Action ID="SlowGo" name="slow_go"/>
             </Parallel>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
-    <TreeNodesModel/>
+    <TreeNodesModel>
+        <Action ID="Action"/>
+        <Action ID="AheadPaper"/>
+        <Action ID="AheadPaper2"/>
+        <Action ID="AlphabetDetect"/>
+        <Action ID="FourMeter"/>
+        <Action ID="PaperSearch"/>
+        <Action ID="SlowGo"/>
+    </TreeNodesModel>
     <!-- ////////// -->
 </root>
