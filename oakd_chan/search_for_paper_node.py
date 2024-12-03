@@ -243,7 +243,7 @@ class SearchForPaperNode(Node):
                 
                 angle_x, angle_y = self.calculate_box_direction(center_gx, center_gy, self.image_width, self.image_height, self.FOV_horizontal, self.FOV_vertical)
                 # print(f"紙の方向: 水平方向 {angle_x}度, 垂直方向 {angle_y}度")
-                print(f"紙の方向: 水平方向 {angle_x}度")
+                # print(f"紙の方向: 水平方向 {angle_x}度")
                 
                 self.measure_depth(depth_value)
 
@@ -355,14 +355,14 @@ class SearchForPaperNode(Node):
         #self.get_logger().info(f'Added new depth value: {depth_value}')
 
         # 平均値を計算してログを表示
-        if len(self.depth_values) == self.max_measurements:
+        if len(self.depth_values) >= self.max_measurements:
             avg_depth = sum(self.depth_values) / len(self.depth_values)
             #self.get_logger().info(f'Current depth values: {self.depth_values}')
             self.get_logger().info(f'Current average = {avg_depth}')
 
-        # 1500mm以内か？
-        if avg_depth < 1500:
-            self.get_logger().warn(f'Warning: 1.5m以内だあああ!')
+            # 1500mm以内か？
+            if avg_depth < 1500:
+                self.get_logger().warn(f'Warning: 1.5m以内だあああ!')
 
 
 # pt0-> pt1およびpt0-> pt2からの
