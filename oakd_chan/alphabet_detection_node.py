@@ -120,8 +120,8 @@ class AlphabetDetectionNode(Node):
         upper_green = np.array([70, 255, 255])  # HSVで緑色の上限
 
         # ”青”色の範囲を定義
-        # lower_green = np.array([90, 60, 60])   # HSVで青色の下限
-        # upper_green = np.array([150, 255, 255])  # HSVで青色の上限
+        # lower_green = np.array([95, 60, 60])   # HSVで青色の下限
+        # upper_green = np.array([115, 255, 255])  # HSVで青色の上限
         
         # 緑色部分のマスクを作成
         mask_green = cv2.inRange(blurred_image, lower_green, upper_green)
@@ -189,7 +189,7 @@ class AlphabetDetectionNode(Node):
     #歪み補正関数(文字認識関数含む)
     def distortion_correction(self, approx, frame, frame2):
         area = abs(cv2.contourArea(approx))
-        if approx.shape[0] == 4 and area > 500 and cv2.isContourConvex(approx) :
+        if approx.shape[0] == 4 and area > 100 and cv2.isContourConvex(approx) :
 
             maxCosine = 0
 
