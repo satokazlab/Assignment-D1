@@ -15,6 +15,9 @@ class SearchForPaperNode(Node):
     def __init__(self):
         super().__init__('search_for_paper_node')
 
+        # QoS for sensors
+        sensor_qos = rclpy.qos.QoSProfile(depth=10)
+
          # パブリッシャーの初期化
         self.depth_publisher = self.create_publisher(Float32, '/paper_depth', 10)
         self.angle_publisher = self.create_publisher(Float32, '/paper_angle_x', 10)
@@ -344,13 +347,13 @@ class SearchForPaperNode(Node):
     def publish_depth_and_angle(self, depth_value, angle_x):
         # depth_valueをパブリッシュ
         depth_msg = Float32()
-        depth_msg.data = depth_value
+        depth_msg.data = float(depth_value)  # 明示的にfloat型に変換
         self.depth_publisher.publish(depth_msg)
         self.get_logger().info(f"Published depth: {depth_value}")
 
         # angle_xをパブリッシュ
         angle_msg = Float32()
-        angle_msg.data = angle_x
+        angle_msg.data = float(angle_x)  # 明示的にfloat型に変換
         self.angle_publisher.publish(angle_msg)
         self.get_logger().info(f"Published angle_x: {angle_x}")
 
