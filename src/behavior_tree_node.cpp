@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   BehaviorTreeFactory factory;
 
   //Node registration process
-  factory.registerNodeType<SearchForPaper>("SearchForPaper");
+  factory.registerNodeType<SearchForPaperNode>("SearchForPaperNode");
 //   factory.registerNodeType<CameraDetected>("CameraDetected");
 //   factory.registerNodeType<ReadingLaser>("ReadingLaser");
 //   factory.registerNodeType<Rotating>("Rotating");
@@ -59,10 +59,10 @@ int main(int argc, char **argv) {
   BT::NodeConfiguration con = {};
 
   //definiion of smart pointers to
-  auto lc_listener = std::make_shared<ReadingLaser>("lc_listener", con);
-  auto lc_odom = std::make_shared<Rotating>("lc_odom", con);
-  auto lc_camera = std::make_shared<CameraDetected>("lc_camera", con);
-  auto lc_stop = std::make_shared<Stop>("lc_stop", con);
+  // auto lc_listener = std::make_shared<ReadingLaser>("lc_listener", con);
+  // auto lc_odom = std::make_shared<Rotating>("lc_odom", con);
+  // auto lc_camera = std::make_shared<CameraDetected>("lc_camera", con);
+  // auto lc_stop = std::make_shared<Stop>("lc_stop", con);
 
   // console log
   BT::StdCoutLogger logger_cout(tree);
@@ -70,10 +70,10 @@ int main(int argc, char **argv) {
   FileLogger logger_file(tree, "src/tb3_behavior_tree/log/tb3_bts_trace.fbl");
   // we spin ROS nodes
   while (rclcpp::ok() && status == BT::NodeStatus::FAILURE) {
-    rclcpp::spin_some(lc_odom);
-    rclcpp::spin_some(lc_listener);
-    rclcpp::spin_some(lc_camera);
-    rclcpp::spin_some(lc_stop);
+    // rclcpp::spin_some(lc_odom);
+    // rclcpp::spin_some(lc_listener);
+    // rclcpp::spin_some(lc_camera);
+    // rclcpp::spin_some(lc_stop);
     //we check the status of node
     status = tree.tickRoot();
 
