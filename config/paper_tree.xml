@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="PaperSearch" name="paper_search"/>
+            <Action ID="SearchForPaper" name="search_for_paper"/>
             <Action ID="AheadPaper" name="ahead_paper"/>
             <Parallel failure_threshold="2" name="GOGO" success_threshold="2">
                 <AlwaysSuccess name="Go"/>

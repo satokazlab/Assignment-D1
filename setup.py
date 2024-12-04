@@ -24,7 +24,7 @@ setup(
             'alphabet_detection_node = oakd_chan.alphabet_detection_node:main',
             'alphabet_detection_real_node = oakd_chan.alphabet_detection_real_node:main',
             'search_for_box_node = oakd_chan.search_for_box_node:main',
-            'search_for_paper_node = oakd_chan.search_for_paper_node:main'
+            # 'search_for_paper_node = oakd_chan.search_for_paper_node:main'
             
         ],
     },

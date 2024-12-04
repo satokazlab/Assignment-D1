@@ -3,16 +3,34 @@
 <package format="3">
   <name>oakd_chan</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Package to search for paper using DepthAI and ROS 2.</description>
   <maintainer email="21238284@edu.cc.saga-u.ac.jp">suguta</maintainer>
   <license>TODO: License declaration</license>
 
+  <!-- Test dependencies (if needed) -->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 
+  <!-- C++ dependencies -->
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>opencv4</exec_depend> <!-- OpenCV C++ -->
+  <exec_depend>depthai</exec_depend> <!-- DepthAI SDK -->
+  
+  <!-- Optional: If your package depends on other libraries -->
+  <!-- <exec_depend>library_name</exec_depend> -->
+  
+  <buildtool_depend>ament_cmake</buildtool_depend> <!-- CMakeを使用 -->
+  <build_depend>rclcpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>opencv4</build_depend>
+  <build_depend>depthai</build_depend>
+
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type> <!-- C++ 用ビルドタイプ -->
   </export>
 </package>
